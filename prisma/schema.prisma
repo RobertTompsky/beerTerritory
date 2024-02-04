@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String  @id @default(uuid())
+  nickName    String  @unique
+  email       String  @unique
+  password    String
+  createdBeers Beer[]
+  favouriteBeers Beer[] @relation(name: "FavouriteBeers")
+  reviews     Review[]
+  profile     Profile?
+}
+
+model Beer {
+  id        String   @id @default(uuid())
+  name      String
+  sort      String
+  ibu       Int
+  abv       Float
+  og        Float
+  volume    Int
+  format    String
+  image     String?
+  reviews   Review[]
+  createdBy  User      @relation(fields: [creatorId], references: [id])
+  creatorId  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  favouriteInUsers   User[] @relation(name: "FavouriteBeers")
+}
+
+model Profile {
+  id               String                @id @default(uuid())
+  realName         String?
+  age              Int?
+  bio              String?
+  avatar           String?
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String                @unique
+}
+
+
+model Review {
+  id      String  @id @default(uuid())
+  body    String
+  rating  Float
+  beer    Beer    @relation(fields: [beerId], references: [id])
+  beerId  String
+  user    User    @relation(fields: [userId], references: [id])
+  userId  String
+}
