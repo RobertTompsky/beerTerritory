@@ -19,6 +19,7 @@ export type ProfileInputData = {
 
 export type BeerInputData = {
     name: string
+    brewery: string
     sort: string
     ibu: number
     abv: number
@@ -26,6 +27,12 @@ export type BeerInputData = {
     volume: number
     format: string
     image: string
+}
+
+export type ReviewInputData = {
+    title: string
+    body: string
+    rating: number
 }
 
 export type DecodedToken = {

@@ -15,6 +15,7 @@ export const profileSchema = z.object({
 
 export const beerAddSchema = z.object({
   name: z.string().min(3),
+  brewery: z.string().min(3),
   sort: z.string().min(3),
   ibu: z.number(),
   abv: z.number(),
@@ -24,6 +25,12 @@ export const beerAddSchema = z.object({
     message: "Формат может быть только 'Банка', 'Бутылка' или 'Розлив'",
   }),
   image: z.string().min(1),
+})
+
+export const reviewAddSchema = z.object({
+  title: z.string().min(3),
+  body: z.string().min(3),
+  rating: z.number().min(1.0).max(5.0)
 })
 
 export function validateData<T>(schema: ZodType<T>, data: T) {
