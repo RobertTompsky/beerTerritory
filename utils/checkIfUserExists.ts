@@ -4,12 +4,8 @@ export async function checkIfUserExists(nickName: string, email?: string): Promi
     const whereCase = email
         ? {
             OR: [
-                {
-                    nickName
-                },
-                {
-                    email
-                }
+                { nickName },
+                { email }
             ]
         }
         : { nickName }

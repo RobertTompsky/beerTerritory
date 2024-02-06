@@ -1,9 +1,9 @@
 import { z, ZodError, ZodType } from 'zod'
 
 export const userRegistrationSchema = z.object({
-    nickName: z.string().min(1),
-    email: z.string().email(),
-    password: z.string().min(6)
+  nickName: z.string().min(1),
+  email: z.string().email(),
+  password: z.string().min(6)
 })
 
 export const profileSchema = z.object({
@@ -34,12 +34,13 @@ export const reviewAddSchema = z.object({
 })
 
 export function validateData<T>(schema: ZodType<T>, data: T) {
-    try {
-      return schema.parse(data);
-    } catch (error) {
-      if (error instanceof ZodError) {
-        console.error(error.errors);
-      }
-      throw new Error('Неправильно введены данные');
-    }
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    const fieldErrors = (error instanceof ZodError)
+      ? error.errors.map((err) => ({ field: err.path.join('.'), message: err.message }))
+      : [error]; // если не ZodError, то добавляем ошибку в массив
+
+    throw fieldErrors;
   }
+}

@@ -151,9 +151,6 @@ export const deleteUser = async (req: RequestWithUser, res: Response) => {
             await tx.user.update({
                 where: { id },
                 data: {
-                    createdBeers: {
-                        set: []
-                    },
                     favouriteBeers: {
                         set: []
                     }
@@ -178,8 +175,8 @@ export const deleteUser = async (req: RequestWithUser, res: Response) => {
 };
 
 export const createUserProfile = async (req: Request, res: Response) => {
+    const { id } = req.params
     try {
-        const { id } = req.params
         const profileData: ProfileInputData = validateData(profileSchema, req.body)
         const { realName, age, bio, avatar } = profileData
 
@@ -218,8 +215,8 @@ export const createUserProfile = async (req: Request, res: Response) => {
 }
 
 export const updateUserProfile = async (req: Request, res: Response) => {
+    const { id } = req.params
     try {
-        const { id } = req.params
         const profileData: ProfileInputData = validateData(profileSchema, req.body)
         const { realName, age, bio } = profileData
 
@@ -228,7 +225,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
                 userId: id
             }
         })
-        console.log(existingProfile)
+
         if (!existingProfile) {
             return res.status(400).json({
                 message: 'Для начала создайте профиль пользователя'
@@ -253,6 +250,48 @@ export const updateUserProfile = async (req: Request, res: Response) => {
             message: 'Не удалось обновить профиль',
             error: error.message
         });
+    }
+}
+
+export const getSelectedUserProfile = async (req: Request, res: Response) => {
+    const {id} = req.params
+    try {
+        const selectedUserProfile = await prisma.profile.findUnique({
+            where: { userId: id}
+        })
+        if (selectedUserProfile) {
+            res.status(201).json(selectedUserProfile)
+        } else {
+            return res.status(400).json({
+                message: 'Пользователь еще не создал свой профиль'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: 'Не удалось выполнить запрос профиля',
+            error: error.message
+        })
+    }
+}
+
+export const getMyProfile = async (req: RequestWithUser, res: Response) => {
+    const {id} = req.user
+    try {
+        const myProfile = await prisma.profile.findUnique({
+            where: { userId: id}
+        })
+        if (myProfile) {
+            res.status(201).json(myProfile)
+        } else {
+            return res.status(400).json({
+                message: 'Вы еще не создали свой профиль'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: 'Не удалось выполнить запрос профиля',
+            error: error.message
+        })
     }
 }
 

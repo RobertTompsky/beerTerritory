@@ -205,6 +205,114 @@ export const deleteBeer = async (req: RequestWithUser, res: Response) => {
     }
 }
 
+export const addBeerToFavourite = async (req: RequestWithUser, res: Response) => {
+    const { id } = req.user
+    const { beerId } = req.params
+
+    try {
+        const me = await prisma.user.findUnique({
+            where: { id },
+            include: {
+                favouriteBeers: true
+            }
+        })
+
+        const beerToAddToFav = await prisma.beer.findUnique({
+            where: { id: beerId }
+        })
+
+        // метод some использует функцию колбэка для сравнения объектов по их id. Если хотя бы один элемент в me.favouriteBeers имеет такое же id как beerToAddToFav, то проверка вернет true, и код внутри условия выполнится.
+        const isBeerExistsInFav: boolean = me.favouriteBeers.some((favBeer) => favBeer.id === beerToAddToFav.id)
+        
+        if (isBeerExistsInFav) {
+            return res.status(403).json({
+                message: 'Пиво уже есть в списке избранного'
+            });
+        }
+
+        if (me && beerToAddToFav) {
+            await prisma.user.update({
+                where: { id },
+                data: {
+                    favouriteBeers: {
+                        connect: { id: beerId }
+                    }
+                }
+            })
+        } else {
+            return res.status(403).json({
+                message: 'Пользователя и/или пива не существует'
+            });
+        }
+
+        res.status(201).json({
+            message: 'Пиво добавлено в избранное'
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Не удалось добавить пиво в избранное",
+            error: error.message
+        })
+    }
+
+}
+
+export const removeBeerFromFavourites = async (req: RequestWithUser, res: Response) => {
+    const { id } = req.user
+    const { beerId } = req.params
+
+    try {
+        const me = await prisma.user.findUnique({
+            where: { id },
+            include: {
+                favouriteBeers: true
+            }
+        })
+
+        const beerToRemoveFromFav = await prisma.beer.findUnique({
+            where: { id: beerId },
+            include: {
+                favouriteInUsers: true
+            }
+        })
+
+        const isBeerExistsInFav: boolean = me.favouriteBeers.some((favBeer) => favBeer.id === beerToRemoveFromFav.id)
+
+        if (!isBeerExistsInFav) {
+            return res.status(403).json({
+                message: 'Пиво уже удалено из списка избранного'
+            });
+        }
+
+        if (me && beerToRemoveFromFav) {
+            await prisma.beer.update({
+                where: { id: beerId },
+                data: {
+                    favouriteInUsers: {
+                        disconnect: { id },
+                    },
+                },
+            });
+
+            res.status(201).json({
+                message: 'Пиво удалено из списка избранного'
+            })
+
+        } else {
+            return res.status(403).json({
+                message: 'Пользователя и/или пива не существует'
+            });
+        }
+
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Не удалось удалить пиво из списка избранного",
+            error: error.message
+        })
+    }
+}
+
 export const getAllSelectedBeerReviews = async (req: Request, res: Response) => {
     const { beerId } = req.params
 
