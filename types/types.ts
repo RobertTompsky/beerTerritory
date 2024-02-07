@@ -41,10 +41,6 @@ export type DecodedToken = {
     exp: number
 }
 
-export interface LoginRequest extends Request {
-    body: UserLoginData
-}
-
-export interface RequestWithUser extends Request {
+export interface UserRequest extends Request {
     user: User
 }

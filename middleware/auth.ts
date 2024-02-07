@@ -2,9 +2,10 @@ import { Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/script'
 import { User } from '@prisma/client'
-import { DecodedToken, RequestWithUser } from '../types/types'
+import { DecodedToken, UserRequest } from '../types/types'
+import { handleServerError } from '../utils/handleServerError'
 
-export const auth = async (req: RequestWithUser, res: Response, next: NextFunction) => {
+export const auth = async (req: UserRequest, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         
@@ -32,14 +33,13 @@ export const auth = async (req: RequestWithUser, res: Response, next: NextFuncti
         if (user) {
             req.user = user
         } else {
-            throw new Error('Проблема авторизации: пользователя нет в базе данных');
+            return res.status(401).json({
+                message: "Пользователь не найден",
+            });
         }
 
         next();
     } catch (error) {
-        res.status(401).json({ 
-            message: "Пользователь не авторизован", 
-            error: error.message 
-        });
+        handleServerError(res, 'Ошибка авторизации', error)
     }
 }

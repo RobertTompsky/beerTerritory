@@ -1,8 +1,7 @@
 import { Beer, Review } from '@prisma/client';
 import { Request, Response } from 'express';
 import { prisma } from '../prisma/script';
-import { BeerInputData, RequestWithUser, ReviewInputData } from '../types/types';
-import { beerAddSchema, reviewAddSchema, validateData } from '../utils/validateData';
+import { BeerInputData, UserRequest, ReviewInputData } from '../types/types';
 
 //даже если req не используется, его все равно надо указывать в параметрах
 export const getAllBeers = async (req: Request, res: Response) => {
@@ -57,13 +56,11 @@ export const getSelectedBeer = async (req: Request, res: Response) => {
     }
 }
 
-export const addBeer = async (req: RequestWithUser, res: Response) => {
+export const addBeer = async (req: UserRequest, res: Response) => {
     const { id } = req.user
+    const { name, brewery, sort, ibu, abv, og, volume, format, image }: BeerInputData = req.body
 
     try {
-        const beerData: BeerInputData = validateData(beerAddSchema, req.body)
-        const { name, brewery, sort, ibu, abv, og, volume, format, image } = beerData
-
         // Если поиск не по id самого отзыва, то тогда findFirst
         const existingBeer: Beer = await prisma.beer.findFirst({
             where: {
@@ -108,11 +105,9 @@ export const addBeer = async (req: RequestWithUser, res: Response) => {
 
 export const updateBeer = async (req: Request, res: Response) => {
     const { beerId } = req.params
+    const { name, brewery, sort, ibu, abv, og, volume, format, image }: BeerInputData = req.body
 
     try {
-        const updatedBeerData: BeerInputData = validateData(beerAddSchema, req.body)
-        const { name, brewery, sort, ibu, abv, og, volume, format, image } = updatedBeerData
-
         const existingBeer: Beer = await prisma.beer.findUnique({
             where: { id: beerId }
         })
@@ -147,7 +142,7 @@ export const updateBeer = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteBeer = async (req: RequestWithUser, res: Response) => {
+export const deleteBeer = async (req: UserRequest, res: Response) => {
     const { id } = req.user
     const { beerId } = req.params
 
@@ -196,7 +191,7 @@ export const deleteBeer = async (req: RequestWithUser, res: Response) => {
     }
 }
 
-export const addBeerToFavourite = async (req: RequestWithUser, res: Response) => {
+export const addBeerToFavourite = async (req: UserRequest, res: Response) => {
     const { id } = req.user
     const { beerId } = req.params
 
@@ -248,7 +243,7 @@ export const addBeerToFavourite = async (req: RequestWithUser, res: Response) =>
 
 }
 
-export const removeBeerFromFavourites = async (req: RequestWithUser, res: Response) => {
+export const removeBeerFromFavourites = async (req: UserRequest, res: Response) => {
     const { id } = req.user
     const { beerId } = req.params
 
@@ -352,14 +347,12 @@ export const getSelectedBeerSelectedReview = async (req: Request, res: Response)
     }
 }
 
-export const addReview = async (req: RequestWithUser, res: Response) => {
+export const addReview = async (req: UserRequest, res: Response) => {
     const { id } = req.user
     const { beerId } = req.params
+    const { title, body, rating }: ReviewInputData = req.body
 
     try {
-        const reviewData: ReviewInputData = validateData(reviewAddSchema, req.body)
-        const { title, body, rating } = reviewData
-
         // Если поиск не по id самого отзыва, то тогда findFirst
         const existingReviewByUser: Review = await prisma.review.findFirst({
             where: { userId: id, beerId }
@@ -399,14 +392,12 @@ export const addReview = async (req: RequestWithUser, res: Response) => {
     }
 }
 
-export const updateReview = async (req: RequestWithUser, res: Response) => {
+export const updateReview = async (req: UserRequest, res: Response) => {
     const { id } = req.user
     const { reviewId } = req.params
+    const { title, body, rating }: ReviewInputData = req.body
 
     try {
-        const reviewData: ReviewInputData = validateData(reviewAddSchema, req.body)
-        const { title, body, rating } = reviewData
-
         const existingReview: Review = await prisma.review.findUnique({
             where: { id: reviewId }
         })
@@ -441,7 +432,7 @@ export const updateReview = async (req: RequestWithUser, res: Response) => {
     }
 }
 
-export const deleteReview = async (req: RequestWithUser, res: Response) => {
+export const deleteReview = async (req: UserRequest, res: Response) => {
     const { id } = req.user;
     const { reviewId } = req.params;
 

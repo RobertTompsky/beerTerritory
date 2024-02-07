@@ -1,8 +1,13 @@
-import { z, ZodError, ZodType } from 'zod'
+import { z} from 'zod'
 
 export const userRegistrationSchema = z.object({
   nickName: z.string().min(1),
   email: z.string().email(),
+  password: z.string().min(6)
+})
+
+export const userLoginSchema = z.object({
+  nickName: z.string().min(1),
   password: z.string().min(6)
 })
 
@@ -13,7 +18,7 @@ export const profileSchema = z.object({
   avatar: z.string().min(1)
 });
 
-export const beerAddSchema = z.object({
+export const beerSchema = z.object({
   name: z.string().min(3),
   brewery: z.string().min(3),
   sort: z.string().min(3),
@@ -27,20 +32,8 @@ export const beerAddSchema = z.object({
   image: z.string().min(1),
 })
 
-export const reviewAddSchema = z.object({
+export const reviewSchema = z.object({
   title: z.string().min(3),
   body: z.string().min(3),
   rating: z.number().min(1.0).max(5.0)
 })
-
-export function validateData<T>(schema: ZodType<T>, data: T) {
-  try {
-    return schema.parse(data);
-  } catch (error) {
-    const fieldErrors = (error instanceof ZodError)
-      ? error.errors.map((err) => ({ field: err.path.join('.'), message: err.message }))
-      : [error]; // если не ZodError, то добавляем ошибку в массив
-
-    throw fieldErrors;
-  }
-}
