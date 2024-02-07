@@ -10,7 +10,7 @@ export const getAllBeers = async (req: Request, res: Response) => {
         const beers: Beer[] = await prisma.beer.findMany()
 
         if (beers && beers.length >= 1) {
-            return res.status(201).json(beers)
+            return res.status(200).json(beers)
         } else {
             return res.status(400).json({
                 message: 'Список пива пуст'
@@ -42,7 +42,7 @@ export const getSelectedBeer = async (req: Request, res: Response) => {
                     }
                 }
             })
-            return res.status(201).json(selectedBeerWithViewsIncreased)
+            return res.status(200).json(selectedBeerWithViewsIncreased)
         } else {
             return res.status(400).json({
                 message: 'Такого пива не существует (пока что)'
@@ -133,7 +133,7 @@ export const updateBeer = async (req: Request, res: Response) => {
                 }
             })
 
-            return res.json(updatedExistingBeer)
+            return res.status(200).json(updatedExistingBeer)
         } else {
             return res.status(400).json({
                 message: 'Такого пива нет'
@@ -173,15 +173,6 @@ export const deleteBeer = async (req: RequestWithUser, res: Response) => {
                         }
                     });
                 }
-
-                await tx.beer.update({
-                    where: { id: beerId },
-                    data: {
-                        favouriteInUsers: {
-                            set: []
-                        }
-                    }
-                });
 
                 await tx.beer.delete({
                     where: { id: beerId }
@@ -245,7 +236,7 @@ export const addBeerToFavourite = async (req: RequestWithUser, res: Response) =>
             });
         }
 
-        res.status(201).json({
+        res.status(200).json({
             message: 'Пиво добавлено в избранное'
         })
     } catch (error) {
@@ -294,7 +285,7 @@ export const removeBeerFromFavourites = async (req: RequestWithUser, res: Respon
                 },
             });
 
-            res.status(201).json({
+            res.status(200).json({
                 message: 'Пиво удалено из списка избранного'
             })
 
@@ -430,7 +421,7 @@ export const updateReview = async (req: RequestWithUser, res: Response) => {
                 }
             })
             if (existingReview.userId === id) {
-                return res.status(201).json(updatedReview)
+                return res.status(200).json(updatedReview)
             } else {
                 return res.status(403).json({
                     message: 'Вы не можете редактировать чужие отзывы'

@@ -15,7 +15,7 @@ export const register = async (req: Request, res: Response) => {
         const userExists = await checkIfUserExists(nickName, email)
         if (userExists) {
             // return Обязательно нужно добавить, чтобы после возвращения ответа код останавливался, а не продолжал слать headers
-            return res.status(400).send("Пользователь уже существует");
+            return res.status(409).send("Пользователь уже существует");
         }
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
@@ -33,8 +33,8 @@ export const register = async (req: Request, res: Response) => {
         res.status(201).json({
             id: user.id,
             nickName: user.nickName,
-            email: user.email,
-            token
+            token,
+            message: 'Пользователь зарегистрировался'
         })
 
     } catch (error) {
@@ -57,7 +57,7 @@ export const login = async (req: LoginRequest, res: Response) => {
         const userExists = await checkIfUserExists(nickName)
         if (!userExists) {
             // return Обязательно нужно добавить, чтобы после возвращения ответа код останавливался, а не продолжал слать headers
-            return res.status(400).send("Пользователя не существует");
+            return res.status(401).send("Пользователя не существует");
         }
 
         const user: User = await prisma.user.findUnique({
@@ -76,8 +76,8 @@ export const login = async (req: LoginRequest, res: Response) => {
         res.status(201).json({
             id: user.id,
             nickName: user.nickName,
-            email: user.email,
-            token
+            token,
+            message: 'Пользователь залогинился'
         })
     } catch (error) {
         res.status(500).json({
@@ -87,22 +87,41 @@ export const login = async (req: LoginRequest, res: Response) => {
     }
 }
 
+export const getAllUsers = async (req: Request, res: Response) => {
+    try {
+        const allUsers = await prisma.user.findMany()
+
+        if (allUsers.length >= 1) {
+            res.status(200).json(allUsers)
+        } else {
+            return res.status(404).json({
+                message: 'Список пользователей пуст'
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: 'Не удалось выполнить запрос пользователя',
+            error: error.message
+        });
+    }
+}
+
 export const getUser = async (req: Request, res: Response) => {
     const { id } = req.params
     try {
-        const user: User = await prisma.user.findUnique({
-            where: {
-                id
+        const user = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                nickName: true,
+                favouriteBeers: true,
+                profile: true
             }
         })
 
         if (user) {
-            res.status(201).json({
-                id: user.id,
-                nickName: user.nickName,
-                email: user.email
-            })
-            console.log('ff')
+            res.status(200).json(user)
+
         } else {
             return res.status(404).json({
                 message: 'Пользователь не найден'
@@ -111,15 +130,42 @@ export const getUser = async (req: Request, res: Response) => {
 
     } catch (error) {
         res.status(500).json({
-            message: 'Не удалось выполнить запрос',
+            message: 'Не удалось выполнить запрос пользователя',
+            error: error.message
+        });
+    }
+}
+
+export const getMe = async (req: RequestWithUser, res: Response) => {
+    const { id } = req.user
+    try {
+        const me = await prisma.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                nickName: true,
+                favouriteBeers: true,
+                profile: true
+            }
+        })
+
+        if (me) {
+            res.status(200).json(me)
+        } else {
+            return res.status(404).json({
+                message: 'Пользователь не найден'
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: 'Не удалось выполнить запрос пользователя',
             error: error.message
         });
     }
 }
 
 export const deleteUser = async (req: RequestWithUser, res: Response) => {
-    const { id } = req.params;
-    // надо будет поменять на req.user
+    const { id } = req.user;
     try {
         await prisma.$transaction(async (tx) => {
             const user = await tx.user.findUnique({
@@ -148,15 +194,6 @@ export const deleteUser = async (req: RequestWithUser, res: Response) => {
                 }
             });
 
-            await tx.user.update({
-                where: { id },
-                data: {
-                    favouriteBeers: {
-                        set: []
-                    }
-                }
-            });
-
             await tx.user.delete({
                 where: { id }
             })
@@ -174,8 +211,8 @@ export const deleteUser = async (req: RequestWithUser, res: Response) => {
     }
 };
 
-export const createUserProfile = async (req: Request, res: Response) => {
-    const { id } = req.params
+export const createUserProfile = async (req: RequestWithUser, res: Response) => {
+    const { id } = req.user
     try {
         const profileData: ProfileInputData = validateData(profileSchema, req.body)
         const { realName, age, bio, avatar } = profileData
@@ -185,6 +222,7 @@ export const createUserProfile = async (req: Request, res: Response) => {
                 userId: id
             }
         })
+
         if (existingProfile) {
             return res.status(400).json({ message: 'Профиль пользователя уже существует' });
         }
@@ -214,8 +252,8 @@ export const createUserProfile = async (req: Request, res: Response) => {
     }
 }
 
-export const updateUserProfile = async (req: Request, res: Response) => {
-    const { id } = req.params
+export const updateUserProfile = async (req: RequestWithUser, res: Response) => {
+    const { id } = req.user
     try {
         const profileData: ProfileInputData = validateData(profileSchema, req.body)
         const { realName, age, bio } = profileData
@@ -243,7 +281,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
             }
         })
 
-        res.status(201).json(updatedUserProfile)
+        res.status(200).json(updatedUserProfile)
 
     } catch (error) {
         res.status(500).json({
@@ -260,7 +298,7 @@ export const getSelectedUserProfile = async (req: Request, res: Response) => {
             where: { userId: id}
         })
         if (selectedUserProfile) {
-            res.status(201).json(selectedUserProfile)
+            res.status(200).json(selectedUserProfile)
         } else {
             return res.status(400).json({
                 message: 'Пользователь еще не создал свой профиль'
@@ -281,7 +319,7 @@ export const getMyProfile = async (req: RequestWithUser, res: Response) => {
             where: { userId: id}
         })
         if (myProfile) {
-            res.status(201).json(myProfile)
+            res.status(200).json(myProfile)
         } else {
             return res.status(400).json({
                 message: 'Вы еще не создали свой профиль'

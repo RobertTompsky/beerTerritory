@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/script'
 import { User } from '@prisma/client'
@@ -16,7 +16,6 @@ export const auth = async (req: RequestWithUser, res: Response, next: NextFuncti
 
         // объект decoded имеет три параметра: userId, iat и exp. Надо указать, что поле userId имеет тип string, чтобы Typescript понимал, что ему ожидать.
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as DecodedToken;
-        console.log(decoded)
 
         if (!decoded || !decoded.userId) {
             return res.status(401).json({
@@ -33,11 +32,14 @@ export const auth = async (req: RequestWithUser, res: Response, next: NextFuncti
         if (user) {
             req.user = user
         } else {
-            throw new Error('Пользователь не найден');
+            throw new Error('Проблема авторизации: пользователя нет в базе данных');
         }
 
         next();
     } catch (error) {
-        res.status(401).json({ message: "Пользователь не авторизован", error: error.message });
+        res.status(401).json({ 
+            message: "Пользователь не авторизован", 
+            error: error.message 
+        });
     }
 }
