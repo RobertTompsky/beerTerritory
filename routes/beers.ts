@@ -16,14 +16,15 @@ import {
 import { auth } from '../middleware/auth';
 import { zodValidation } from '../middleware/zodValidation';
 import { beerSchema, reviewSchema } from '../zodSchemas/zodSchemas';
+import { fileUploader } from '../middleware/fileUploader';
 
 const router = express.Router()
 
 router.get('/', auth, getBeers)
 router.get('/:beerId', auth, getSelectedBeer)
 
-router.post('/add', auth, zodValidation(beerSchema), addBeer)
-router.patch('/:beerId/update', auth, zodValidation(beerSchema), updateBeer)
+router.post('/add', auth, fileUploader('beerImage'), zodValidation(beerSchema), addBeer)
+router.patch('/:beerId/update', auth, fileUploader('beerImage'), zodValidation(beerSchema), updateBeer)
 router.delete('/:beerId/delete', auth, deleteBeer)
 router.post('/:beerId/add_to_favourites', auth, addBeerToFavourite)
 router.delete('/:beerId/remove_from_favourites', auth, removeBeerFromFavourites)

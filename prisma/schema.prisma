@@ -29,7 +29,7 @@ model Beer {
   ibu              Int
   abv              Float
   og               Float
-  volume           Int
+  volume           Float
   format           String
   image            String?
   reviews          Review[]
@@ -43,9 +43,9 @@ model Beer {
 
 model Profile {
   id       String  @id @default(uuid())
-  realName String?
-  age      String?
-  bio      String?
+  realName String
+  age      Int
+  bio      String
   avatar   String?
   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId   String  @unique
