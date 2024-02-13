@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodError, z } from 'zod';
+import { handleServerError } from '../utils/handleServerError';
 
 export const zodValidation = (schema: z.AnyZodObject | z.ZodOptional<z.AnyZodObject>) =>
+//так как внутри верхней функции срабатывает только одна функция, можно обойтись просто стрелкой без { }
     async (req: Request, res: Response, next: NextFunction) => {
-        try {
+        try {            
             await schema.parseAsync(req.body);
+            console.log(req.body)
             next();
         } catch (error) {
             if (error instanceof ZodError) {
@@ -16,10 +19,7 @@ export const zodValidation = (schema: z.AnyZodObject | z.ZodOptional<z.AnyZodObj
                     details: errorMessages
                 });
             } else {
-                res.status(500).json({
-                    message: 'Ошибка при обработке со стороны сервера',
-                    error: error.message
-                });
+                handleServerError(res, 'Ошибка при обработке со стороны сервера', error)
             }
         }
     };

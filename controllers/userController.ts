@@ -45,7 +45,7 @@ export const register = async (req: Request, res: Response) => {
     }
 }
 
-export const login = async (req: Request, res: Response) => {
+export const logIn = async (req: Request, res: Response) => {
     const { nickName, password }: UserLoginData = req.body
     try {
         const userExists = await checkIfUserExists(nickName)
@@ -79,6 +79,18 @@ export const login = async (req: Request, res: Response) => {
         handleServerError(res, 'Не удалось совершить авторизацию пользователя', error)
     }
 }
+
+export const logOut = (req: Request, res: Response) => {
+    try {
+        res.clearCookie('jwtToken');
+
+        res.status(200).json({ 
+            message: 'Пользователь успешно вышел из системы' 
+        });
+    } catch (error) {
+        handleServerError(res, 'Ошибка при выходе пользователя', error)
+    }
+};
 
 export const getAllUsers = async (req: UserRequest, res: Response) => {
     try {
@@ -194,7 +206,7 @@ export const deleteUser = async (req: UserRequest, res: Response) => {
 
 export const createUserProfile = async (req: UserRequest, res: Response) => {
     const { id } = req.user
-    const { realName, age, bio, avatar }: ProfileInputData = req.body
+    const { realName, age, bio }: ProfileInputData = req.body
     try {
         const existingProfile: Profile = await prisma.profile.findUnique({
             where: {
@@ -213,7 +225,7 @@ export const createUserProfile = async (req: UserRequest, res: Response) => {
                 realName,
                 age,
                 bio,
-                avatar,
+                avatar: req?.file?.path || '',
                 user: {
                     connect: {
                         id
@@ -231,7 +243,7 @@ export const createUserProfile = async (req: UserRequest, res: Response) => {
 
 export const updateUserProfile = async (req: UserRequest, res: Response) => {
     const { id } = req.user
-    const { realName, age, bio, avatar }: ProfileInputData = req.body
+    const { realName, age, bio }: ProfileInputData = req.body
     try {
         const existingProfile: Profile = await prisma.profile.findUnique({
             where: {
@@ -252,8 +264,7 @@ export const updateUserProfile = async (req: UserRequest, res: Response) => {
             data: {
                 realName,
                 age,
-                bio,
-                avatar
+                bio
             }
         })
 

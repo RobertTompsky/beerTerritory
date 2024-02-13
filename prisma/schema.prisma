@@ -25,7 +25,7 @@ model Beer {
   id               String   @id @default(uuid())
   name             String
   brewery          String
-  sort             String
+  type             String
   ibu              Int
   abv              Float
   og               Float
@@ -44,7 +44,7 @@ model Beer {
 model Profile {
   id       String  @id @default(uuid())
   realName String?
-  age      Int?
+  age      String?
   bio      String?
   avatar   String?
   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)

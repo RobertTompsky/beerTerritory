@@ -5,7 +5,7 @@ import {
     addReview,
     deleteBeer,
     deleteReview,
-    getAllBeers,
+    getBeers,
     getAllSelectedBeerReviews,
     getSelectedBeer,
     getSelectedBeerSelectedReview,
@@ -19,12 +19,12 @@ import { beerSchema, reviewSchema } from '../zodSchemas/zodSchemas';
 
 const router = express.Router()
 
-router.get('/', getAllBeers)
-router.get('/:beerId', getSelectedBeer)
+router.get('/', auth, getBeers)
+router.get('/:beerId', auth, getSelectedBeer)
+
 router.post('/add', auth, zodValidation(beerSchema), addBeer)
 router.patch('/:beerId/update', auth, zodValidation(beerSchema), updateBeer)
 router.delete('/:beerId/delete', auth, deleteBeer)
-
 router.post('/:beerId/add_to_favourites', auth, addBeerToFavourite)
 router.delete('/:beerId/remove_from_favourites', auth, removeBeerFromFavourites)
 

@@ -13,15 +13,14 @@ export const userLoginSchema = z.object({
 
 export const profileSchema = z.object({
   realName: z.string().min(1),
-  age: z.number().min(18),
-  bio: z.string().min(2),
-  avatar: z.string().min(1)
+  age: z.string().min(2),
+  bio: z.string().min(2)
 });
 
 export const beerSchema = z.object({
   name: z.string().min(3),
   brewery: z.string().min(3),
-  sort: z.string().min(3),
+  type: z.string().min(3),
   ibu: z.number(),
   abv: z.number(),
   og: z.number(),
@@ -37,3 +36,8 @@ export const reviewSchema = z.object({
   body: z.string().min(3),
   rating: z.number().min(1.0).max(5.0)
 })
+
+export const beersQuerySchema = z.object({
+  page: z.string().regex(/^[1-9][0-9]{0,2}$/),
+  per_page: z.string().regex(/^[1-9][0-9]{0,2}$/)
+});

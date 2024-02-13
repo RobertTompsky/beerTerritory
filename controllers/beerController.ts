@@ -1,28 +1,67 @@
 import { Beer, Review } from '@prisma/client';
 import { Request, Response } from 'express';
 import { prisma } from '../prisma/script';
-import { BeerInputData, UserRequest, ReviewInputData } from '../types/types';
+import { BeerInputData, UserRequest, ReviewInputData, FilterOptions, SortOption } from '../types/types';
+import { handleServerError } from '../utils/handleServerError';
+import { sortOptions } from '../config/sortingConfig';
 
 //даже если req не используется, его все равно надо указывать в параметрах
-export const getAllBeers = async (req: Request, res: Response) => {
+export const getBeers = async (req: Request, res: Response) => {
+    // sort - query-параметр для сортировки 
+    const { page, per_page, brewery, type, sort } = req.query;
+
+    const pageNumber = Number(page as string) || 1;
+    const itemsPerPage = Number(per_page as string) || 228;
+
+    const filterOptions: FilterOptions = {
+        skip: (pageNumber - 1) * itemsPerPage,
+        take: itemsPerPage,
+        where: {},
+        orderBy: {
+            // по дефолту сортировка идет по дате добавления
+            createdAt: sort === 'asc' ? 'asc' : 'desc' 
+        }
+    };
+    // filterAdditionalParams имеет тип объекта, который может содержать бесконечное количество пар ключ-значение
+    const filterParams: { [key: string]: string } = {
+        brewery: brewery as string,
+        type: type as string
+    };
+
+    Object.entries(filterParams).forEach(([key, value]) => {
+        if (value) {
+            filterOptions.where[key] = value;
+        }
+    });
+
+
+    if (sort && sortOptions[sort as string]) {
+        const { field, order } = sortOptions[sort as string];
+        filterOptions.orderBy = {
+            [field]: order
+        };
+    }
+
+    if (pageNumber < 1 || itemsPerPage < 1) {
+        return res.status(400).json({
+            message: 'Неправильные параметры запроса'
+        });
+    }
+
     try {
-        const beers: Beer[] = await prisma.beer.findMany()
+        const beers: Beer[] = await prisma.beer.findMany(filterOptions);
 
         if (beers && beers.length >= 1) {
-            return res.status(200).json(beers)
+            return res.status(200).json(beers);
         } else {
             return res.status(400).json({
                 message: 'Список пива пуст'
-            })
+            });
         }
-
     } catch (error) {
-        res.status(500).json({
-            message: "Не удалось получить список пива",
-            error: error.message
-        })
+        handleServerError(res, 'Не удалось получить список пива', error);
     }
-}
+};
 
 export const getSelectedBeer = async (req: Request, res: Response) => {
     const { beerId } = req.params
@@ -44,7 +83,7 @@ export const getSelectedBeer = async (req: Request, res: Response) => {
             return res.status(200).json(selectedBeerWithViewsIncreased)
         } else {
             return res.status(400).json({
-                message: 'Такого пива не существует (пока что)'
+                message: 'Такого пива не существует'
             })
         }
 
@@ -56,16 +95,17 @@ export const getSelectedBeer = async (req: Request, res: Response) => {
     }
 }
 
+
 export const addBeer = async (req: UserRequest, res: Response) => {
     const { id } = req.user
-    const { name, brewery, sort, ibu, abv, og, volume, format, image }: BeerInputData = req.body
+    const { name, brewery, type, ibu, abv, og, volume, format, image }: BeerInputData = req.body
 
     try {
         // Если поиск не по id самого отзыва, то тогда findFirst
         const existingBeer: Beer = await prisma.beer.findFirst({
             where: {
                 name,
-                sort
+                type
             }
         })
 
@@ -74,7 +114,7 @@ export const addBeer = async (req: UserRequest, res: Response) => {
                 data: {
                     name,
                     brewery,
-                    sort,
+                    type,
                     ibu,
                     abv,
                     og,
@@ -105,7 +145,7 @@ export const addBeer = async (req: UserRequest, res: Response) => {
 
 export const updateBeer = async (req: Request, res: Response) => {
     const { beerId } = req.params
-    const { name, brewery, sort, ibu, abv, og, volume, format, image }: BeerInputData = req.body
+    const { name, brewery, type, ibu, abv, og, volume, format, image }: BeerInputData = req.body
 
     try {
         const existingBeer: Beer = await prisma.beer.findUnique({
@@ -118,7 +158,7 @@ export const updateBeer = async (req: Request, res: Response) => {
                 data: {
                     name,
                     brewery,
-                    sort,
+                    type,
                     ibu,
                     abv,
                     og,
@@ -209,7 +249,7 @@ export const addBeerToFavourite = async (req: UserRequest, res: Response) => {
 
         // метод some использует функцию колбэка для сравнения объектов по их id. Если хотя бы один элемент в me.favouriteBeers имеет такое же id как beerToAddToFav, то проверка вернет true, и код внутри условия выполнится.
         const isBeerExistsInFav: boolean = me.favouriteBeers.some((favBeer) => favBeer.id === beerToAddToFav.id)
-        
+
         if (isBeerExistsInFav) {
             return res.status(403).json({
                 message: 'Пиво уже есть в списке избранного'

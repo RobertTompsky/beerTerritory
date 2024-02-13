@@ -12,15 +12,14 @@ export type UserLoginData = Pick<UserRegistrationData, 'nickName' | 'password'>;
 
 export type ProfileInputData = {
     realName: string,
-    age: number,
-    bio: string,
-    avatar: string
+    age: string,
+    bio: string
 }
 
 export type BeerInputData = {
     name: string
     brewery: string
-    sort: string
+    type: string
     ibu: number
     abv: number
     og: number
@@ -43,4 +42,22 @@ export type DecodedToken = {
 
 export interface UserRequest extends Request {
     user: User
+}
+
+export interface FilterOptions {
+    skip: number;
+    take: number;
+    where?: {
+        type?: string,
+        brewery?: string
+    },
+    orderBy?: {
+        viewsCount?: 'asc' | 'desc',
+        createdAt?: 'asc' | 'desc'
+    }
+}
+
+export type SortOption = {
+    field: string,
+    order: 'asc' | 'desc'
 }

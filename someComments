@@ -1,0 +1,40 @@
+Для универсальной обработки различных схем данных в зависимости от типа запроса (например, создание профиля или создание пива) можно использовать объекты или динамическое определение полей входящих данных. Вместо хардкода можно создать объекты, которые содержат информацию о полях, которые должны быть валидированы, и соответствующих им схемах.
+
+Например, можно создать объект, в котором будет информация о полях для разных действий:
+
+const actionsData = {
+    createProfile: {
+        fields: ['realName', 'age', 'bio'],
+        schema: profileSchema
+    },
+    createBeer: {
+        fields: ['name', 'type', 'brewery'],
+        schema: beerSchema 
+    }
+};
+
+
+export const fileUploaderWithValidation = (fileToUpload: string, action) => async (req, res, next) => {
+    try {
+        const maxFileSize: number = 1 * 1024 * 1024; // 1 MB
+
+        const { fields, schema } = actionsData[action];
+
+        const data = {};
+
+        // Извлечение данных в соответствии с полями из объекта
+        fields.forEach(field => {
+            data[field] = req.body[field];
+        });
+
+        zodValidation(schema)(data, res, async () => {
+            upload.single(fileToUpload)(req, res, async (error) => {
+                // обработка ошибок загрузки файла
+            });
+
+        });
+
+    } catch (error) {
+        handleServerError(res, 'Ошибка в fileUploaderWithValidation ', error);
+    }
+};
