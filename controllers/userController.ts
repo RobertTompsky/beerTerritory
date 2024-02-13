@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { checkIfUserExists } from '../utils/checkIfUserExists';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { prisma } from '../prisma/script';
@@ -10,12 +9,20 @@ import { handleServerError } from '../utils/handleServerError';
 export const register = async (req: Request, res: Response) => {
     const { nickName, email, password }: UserRegistrationData = req.body
     try {
-        const userExists = await checkIfUserExists(nickName, email)
+        const existingUser = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { nickName },
+                    { email }
+                ]
+            }
+        })
 
-        if (userExists) {
+        if (existingUser) {
             // return Обязательно нужно добавить, чтобы после возвращения ответа код останавливался, а не продолжал слать headers
             return res.status(409).send("Пользователь уже существует");
         }
+        
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
 
@@ -48,8 +55,11 @@ export const register = async (req: Request, res: Response) => {
 export const logIn = async (req: Request, res: Response) => {
     const { nickName, password }: UserLoginData = req.body
     try {
-        const userExists = await checkIfUserExists(nickName)
-        if (!userExists) {
+        const existingUser = await prisma.user.findFirst({
+            where: { nickName }
+        }) 
+
+        if (!existingUser) {
             // return Обязательно нужно добавить, чтобы после возвращения ответа код останавливался, а не продолжал слать headers
             return res.status(401).send("Пользователя не существует");
         }
@@ -94,7 +104,17 @@ export const logOut = (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: UserRequest, res: Response) => {
     try {
-        const allUsers = await prisma.user.findMany()
+        const allUsers = await prisma.user.findMany({
+            select: {
+                id: true,
+                nickName: true,
+                profile: {
+                    select: {
+                        avatar: true
+                    }
+                }
+            }
+        })
 
         if (allUsers.length >= 1) {
             res.status(200).json(allUsers)
@@ -116,7 +136,13 @@ export const getUser = async (req: Request, res: Response) => {
             select: {
                 id: true,
                 nickName: true,
-                favouriteBeers: true,
+                favouriteBeers: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true
+                    }
+                },
                 profile: true
             }
         })
@@ -143,7 +169,13 @@ export const getMe = async (req: UserRequest, res: Response) => {
             select: {
                 id: true,
                 nickName: true,
-                favouriteBeers: true,
+                favouriteBeers: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true
+                    }
+                },
                 profile: true
             }
         })
@@ -264,7 +296,8 @@ export const updateUserProfile = async (req: UserRequest, res: Response) => {
             data: {
                 realName,
                 age,
-                bio
+                bio,
+                avatar: req?.file?.path || ''
             }
         })
 
