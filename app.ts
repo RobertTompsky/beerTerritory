@@ -14,7 +14,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/beers', beerRoutes)
 app.use('/api/search', searchRoutes)
 
-app.listen(process.env.PORT, ()=> {
+app.listen(process.env.PORT, () => {
     console.log('Server started')
 })
 

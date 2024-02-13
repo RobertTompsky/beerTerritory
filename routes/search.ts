@@ -1,6 +1,6 @@
 import express from 'express';
 import { auth } from '../middleware/auth';
-import { searchBeers } from '../controllers/search/SearchBeers';
+import { searchBeers } from '../controllers/search/searchBeers';
 
 const router = express.Router()
 
