@@ -11,20 +11,6 @@ const storage = multer.diskStorage({
   }
 });
 
-type Callback = (error: Error | null, allowed: boolean) => void;
-
-const fileFilter = (req: Request, file: Express.Multer.File, cb: Callback) => {
-  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
-    cb(null, true);
-  } else {
-    cb(new Error('Неподдерживаемый тип файла'), false);
-  }
-};
-
-const limits = {
-  fileSize: 1024 * 1024 // Максимальный размер файла 1 МБ
-};
-
 export const upload = multer({
   storage,
 })
