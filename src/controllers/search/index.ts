@@ -1,0 +1,1 @@
+export { searchBeers } from "./searchBeers";
