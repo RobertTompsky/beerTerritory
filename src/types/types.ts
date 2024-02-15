@@ -60,3 +60,7 @@ export type SortOption = {
     field: string,
     order: 'asc' | 'desc'
 }
+
+export interface LoginRequest extends Request {
+    body: UserLoginData
+}

@@ -7,7 +7,6 @@ export const zodValidation = (schema: z.AnyZodObject | z.ZodOptional<z.AnyZodObj
     async (req: Request, res: Response, next: NextFunction) => {
         try {            
             await schema.parseAsync(req.body);
-            console.log(req.body)
             next();
         } catch (error) {
             if (error instanceof ZodError) {
