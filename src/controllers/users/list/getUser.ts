@@ -1,9 +1,10 @@
 import { prisma } from '@/prisma/script';
+import { UserRequest } from '@/types/types';
 import { handleServerError } from '@/utils/handleServerError';
 import { Request, Response } from 'express';
 
-export const getUser = async (req: Request, res: Response) => {
-    const { id } = req.params
+export const getUser = async (req: UserRequest, res: Response) => {
+    const { id } = req.params || req.user
     try {
         const user = await prisma.user.findUnique({
             where: { id },

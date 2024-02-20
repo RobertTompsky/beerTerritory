@@ -4,7 +4,8 @@ import 'dotenv/config'
 import {
     SearchRoutes, 
     UsersRoutes, 
-    BeersRoutes
+    BeersRoutes,
+    ImagesRoutes
 } from '@/routes/index'
 
 const app = express()
@@ -16,6 +17,7 @@ app.use(cors())
 app.use('/api/users', UsersRoutes)
 app.use('/api/beers', BeersRoutes)
 app.use('/api/search', SearchRoutes)
+app.use('/api/images', ImagesRoutes)
 
 app.listen(process.env.PORT, () => {
     console.log('Server started')
