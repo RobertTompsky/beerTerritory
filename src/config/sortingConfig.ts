@@ -15,7 +15,7 @@ export const sortOptions: Record<string, SortOption> = {
     },
     abvAsc: {
         field: 'abv',
-        order: 'desc'
+        order: 'asc'
     },
     // Другие варианты сортировки могут быть добавлены аналогичным образом
 };

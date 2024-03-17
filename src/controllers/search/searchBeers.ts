@@ -24,9 +24,7 @@ export const searchBeers = async (req: Request, res: Response) => {
             res.status(200).json(beersToSearch)
 
         } else {
-            return res.status(400).json({
-                message: 'Не указан поисковый запрос'
-            })
+            return res.status(200).json([])
         }
     } catch (error) {
         handleServerError(res, 'Не удалось выполнить поиск пива', error)

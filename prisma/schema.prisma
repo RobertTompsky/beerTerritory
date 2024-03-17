@@ -26,11 +26,8 @@ model Beer {
   name             String
   brewery          String
   type             String
-  ibu              Int
   abv              Float
-  og               Float
   volume           Float
-  format           String
   image            String?
   reviews          Review[]
   createdBy        User     @relation(fields: [creatorId], references: [id])

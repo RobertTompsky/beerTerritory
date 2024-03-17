@@ -6,7 +6,7 @@ import { Response } from 'express';
 
 export const addBeer = async (req: UserRequest, res: Response) => {
     const { id } = req.user
-    const { name, brewery, type, ibu, abv, og, volume, format }: BeerInputData = req.body
+    const { name, brewery, type, abv, volume, image }: BeerInputData = req.body
 
     try {
         // Если поиск не по id самого отзыва, то тогда findFirst
@@ -23,12 +23,9 @@ export const addBeer = async (req: UserRequest, res: Response) => {
                     name,
                     brewery,
                     type,
-                    ibu,
                     abv,
-                    og,
                     volume,
-                    format,
-                    image: req.file?.path || '',
+                    image: image || '',
                     createdBy: {
                         connect: {
                             id

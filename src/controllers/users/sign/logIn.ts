@@ -15,12 +15,14 @@ export const logIn = async (req: Request, res: Response) => {
         }) 
         if (!existingUser) {
             // return Обязательно нужно добавить, чтобы после возвращения ответа код останавливался, а не продолжал слать headers
-            return res.status(401).send("Пользователя не существует");
+            return res.status(404).json({
+                message: "Пользователя не существует"
+            });
         }
 
         const passwordMatch = await bcrypt.compare(password, existingUser.password)
         if (!passwordMatch) {
-            return res.status(401).json({
+            return res.status(404).json({
                 message: 'Неверный пароль'
             });
         }

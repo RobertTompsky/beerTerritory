@@ -14,6 +14,14 @@ export const getSelectedBeer = async (req: Request, res: Response) => {
         if (selectedBeer) {
             const selectedBeerWithViewsIncreased = await prisma.beer.update({
                 where: { id: beerId },
+                include: {
+                    favouriteInUsers: {
+                        select: {
+                            id: true,
+                            nickName: true
+                        }
+                    }
+                },
                 data: {
                     viewsCount: {
                         increment: 1

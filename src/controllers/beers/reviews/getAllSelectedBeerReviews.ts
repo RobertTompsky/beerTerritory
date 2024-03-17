@@ -7,16 +7,23 @@ export const getAllSelectedBeerReviews = async (req: Request, res: Response) => 
     const { beerId } = req.params
 
     try {
-        const selectedBeerReviews: Review[] = await prisma.review.findMany({
-            where: { beerId }
+        const selectedBeerReviews = await prisma.review.findMany({
+            where: { beerId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        nickName: true,
+                        profile: true
+                    }
+                }
+            }
         })
 
         if (selectedBeerReviews.length >= 1) {
             res.status(200).json(selectedBeerReviews)
         } else {
-            return res.status(403).json({
-                message: 'Список обзоров на выбранное пиво пуст'
-            });
+            return res.status(200).json([]);
         }
 
     } catch (error) {

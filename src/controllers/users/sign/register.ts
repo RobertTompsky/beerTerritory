@@ -20,7 +20,9 @@ export const register = async (req: Request, res: Response) => {
 
         if (existingUser) {
             // return Обязательно нужно добавить, чтобы после возвращения ответа код останавливался, а не продолжал слать headers
-            return res.status(409).send("Пользователь уже существует");
+            return res.status(409).json({
+                message: 'Пользователь уже существует'
+            });
         }
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)

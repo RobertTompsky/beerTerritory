@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 
 export const updateBeer = async (req: Request, res: Response) => {
     const { beerId } = req.params
-    const { name, brewery, type, ibu, abv, og, volume, format }: BeerInputData = req.body
+    const { name, brewery, type, abv, volume, image }: BeerInputData = req.body
 
     try {
         const existingBeer: Beer = await prisma.beer.findUnique({
@@ -20,12 +20,9 @@ export const updateBeer = async (req: Request, res: Response) => {
                     name,
                     brewery,
                     type,
-                    ibu,
                     abv,
-                    og,
                     volume,
-                    format,
-                    image: req.file?.path || '',
+                    image: image || '',
                 }
             })
 

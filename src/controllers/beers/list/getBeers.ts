@@ -5,6 +5,7 @@ import { handleServerError } from "@/utils/handleServerError";
 import { Beer } from "@prisma/client";
 import { Request, Response } from 'express';
 
+// <Beer[] | {message: string}> 
 //даже если req не используется, его все равно надо указывать в параметрах
 export const getBeers = async (req: Request, res: Response) => {
     // sort - query-параметр для сортировки 
@@ -19,7 +20,7 @@ export const getBeers = async (req: Request, res: Response) => {
         where: {},
         orderBy: {
             // по дефолту сортировка идет по дате добавления
-            createdAt: sort === 'asc' ? 'asc' : 'desc' 
+            createdAt: sort as string === 'asc' ? 'asc' : 'desc' 
         }
     };
     // filterAdditionalParams имеет тип объекта, который может содержать бесконечное количество пар ключ-значение
@@ -54,9 +55,7 @@ export const getBeers = async (req: Request, res: Response) => {
         if (beers && beers.length >= 1) {
             return res.status(200).json(beers);
         } else {
-            return res.status(400).json({
-                message: 'Список пива пуст'
-            });
+            return res.status(200).json([]);
         }
     } catch (error) {
         handleServerError(res, 'Не удалось получить список пива', error);

@@ -13,7 +13,7 @@ export const zodValidation = (schema: z.AnyZodObject | z.ZodOptional<z.AnyZodObj
                 const errorMessages = error.errors.map((issue: any) => ({
                     message: `${issue.path.join('.')} is ${issue.message}`,
                 }))
-                res.status(401).json({
+                res.status(400).json({
                     message: 'Неправильно введены данные',
                     details: errorMessages
                 });

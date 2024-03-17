@@ -15,7 +15,10 @@ export const getMe = async (req: UserRequest, res: Response) => {
                     select: {
                         id: true,
                         name: true,
-                        image: true
+                        image: true,
+                        brewery: true,
+                        type: true,
+                        viewsCount: true
                     }
                 },
                 profile: true

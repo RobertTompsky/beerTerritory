@@ -6,7 +6,7 @@ import { Response } from 'express';
 
 export const createUserProfile = async (req: UserRequest, res: Response) => {
     const { id } = req.user
-    const { realName, age, bio }: ProfileInputData = req.body
+    const { realName, age, bio, avatar }: ProfileInputData = req.body
     try {
         const existingProfile: Profile = await prisma.profile.findUnique({
             where: {
@@ -25,7 +25,7 @@ export const createUserProfile = async (req: UserRequest, res: Response) => {
                 realName,
                 age,
                 bio,
-                avatar: req?.file?.path || '',
+                avatar: avatar || '',
                 user: {
                     connect: {
                         id

@@ -13,18 +13,17 @@ export type UserLoginData = Pick<UserRegistrationData, 'nickName' | 'password'>;
 export type ProfileInputData = {
     realName: string,
     age: number,
-    bio: string
+    bio: string,
+    avatar?: string
 }
 
 export type BeerInputData = {
     name: string
     brewery: string
     type: string
-    ibu: number
     abv: number
-    og: number
     volume: number
-    format: string
+    image: string
 }
 
 export type ReviewInputData = {

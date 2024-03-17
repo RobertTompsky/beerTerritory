@@ -28,7 +28,8 @@ export const uploadImage = async (req: Request, res: Response) => {
                 }
 
                 console.log(req.file.path);
-                res.status(200).json({ filePath: req.file.path });
+                res.status(200).json({ filePath: req.file.path, fileName: req.file.filename });
+                
             } else {
                 console.log('Файл или данные не были загружены');
                 res.status(400).json({ message: 'Файл не был загружен' });

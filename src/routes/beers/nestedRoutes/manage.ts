@@ -18,8 +18,8 @@ router.post('/add', auth, zodValidation(beerSchema), addBeer)
 router.patch('/:beerId/update', auth, zodValidation(beerSchema), updateBeer)
 router.delete('/:beerId/delete', auth, deleteBeer)
 
-router.post('/:beerId/add_to_favourites', auth, addBeerToFavorite)
-router.delete('/:beerId/remove_from_favourites', auth, removeBeerFromFavourites)
+router.post('/:beerId/add_to_favorites', auth, addBeerToFavorite)
+router.delete('/:beerId/remove_from_favorites', auth, removeBeerFromFavourites)
 
 router.use(ReviewsRoutes)
 
